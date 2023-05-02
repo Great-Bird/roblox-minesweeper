@@ -1,4 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+
+local Board = require(ReplicatedStorage.Shared.components.Board)
 
 -- while true do
 --     local gameIsOn = true
@@ -14,3 +17,8 @@ local RunService = game:GetService("RunService")
 --         replicateState()
 --     end)
 -- end
+
+local board = Board.create(10, 10, 50)
+for _, cell in board.cells do
+    print(cell.isMine)
+end
