@@ -20,4 +20,8 @@ function BoardTransforms.getCellFromCoordinates(board: Board.Board, coordinates:
     return board.cells[BoardTransforms.coordinatesToIndex(board, coordinates)]
 end
 
+function BoardTransforms.getCellFromIndex(board: Board.Board, index: number): Board.Cell
+    return board.cells[index]
+end
+
 return BoardTransforms
