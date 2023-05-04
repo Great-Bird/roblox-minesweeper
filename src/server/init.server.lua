@@ -19,20 +19,23 @@ type Action = {
 local initialGameState: GameState = {
     boardState = Board.create(10, 10, 20),
 }
-local boardReducer = Rodux.createReducer(initialState, {
-    CellCleared = function(state: GameState, action: Action)
-        
+local boardReducer = Rodux.createReducer(initialGameState, {
+    CellCleared = function(board: Board.Board, action: Action)
+        -- TODO: cell clear logic
+        -- local newBoard = Board.create()
     end,
 })
 local reducer = Rodux.combineReducers({
     boardState = boardReducer,
 })
 
-local cellCleared = Rodux.makeActionCreator("CellCleared", function()
+function cellCleared(index: number): Action
     return {
-        
+        type = "CellCleared",
+        index = index,
+        shouldReplicate = true,
     }
-end)
+end
 
 
 function main()
@@ -41,12 +44,13 @@ function main()
         replicatorMiddleware,
     })
 
-    boardStore:dispatch()
+    boardStore:dispatch(cellCleared(1))
 
     while true do
         -- TODO: round logic
         -- TODO: visualize minesweeper boards
         -- TODO: event handling
+        task.wait()
     end
 end
 
@@ -60,13 +64,5 @@ function replicatorMiddleware(nextDispatch, store: GameState): any
     end
 end
 
-
--- function startGame()
---     local board = Board.create(10, 10, 50)
---     print(board)
---     for _, cell in board.cells do
---         print(cell.isMine)
---     end
--- end
 
 main()
