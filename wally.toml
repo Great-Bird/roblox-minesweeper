@@ -1,0 +1,8 @@
+[package]
+name = "bird/roblox-minesweeper"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+net = "sleitnick/net@0.1.0"
