@@ -9,6 +9,10 @@ export type Board = {
     width: number,
     cells: {Cell},
 }
+export type Coordinates = {
+    row: number,
+    column: number,
+}
 
 local random = Random.new()
 
