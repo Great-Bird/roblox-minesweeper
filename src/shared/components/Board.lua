@@ -6,6 +6,7 @@ export type Cell = {
     isMine: boolean,
 }
 export type Board = {
+    height: number,
     width: number,
     cells: {Cell},
 }
@@ -31,23 +32,10 @@ local Board = {}
 
 -- TODO: benchmark to see whether or not shuffling makes iteration slower
 function Board.create(height: number, width: number, mines: number): Board
-    local cellCount = height * width
-    local cells = table.create(cellCount)
-    for i = 1, cellCount do
-        cells[i] = Cell(i <= mines)
-    end
-
-    -- shuffle mines
-    -- algorithm used: Fisher-Yates shuffle
-    -- https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
-    for i = 1, cellCount - 1 do
-        local j = random:NextInteger(i, cellCount - 1)
-        cells[i], cells[j] = cells[j], cells[i]
-    end
-
     return {
+        height = height,
         width = width,
-        cells = cells,
+        cells = {},
     }
 end
 
