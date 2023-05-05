@@ -1,7 +1,7 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Board = require(ReplicatedStorage.Shared.components.Board)
+local Board = require(ReplicatedStorage.Shared.types.Board)
 
 local BoardTransforms = {}
 
