@@ -24,9 +24,6 @@ function main()
             store:dispatch(action)    
         end)
     end)
-
-
-    
 end
 
 
