@@ -7,85 +7,61 @@ local Board = require(ReplicatedStorage.Shared.types.Board)
 local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 local Net = require(ReplicatedStorage.Packages.Net)
 local Rodux = require(ReplicatedStorage.Shared.modules.Rodux)
-local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
+local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
 
+local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
-type GameState = {
-    boardState: Board.Board,
-}
-type Action = {
-    type: string,
-    shouldReplicate: boolean?
-}
-type CellsClearedAction = Action & {
-    indices: {number},
-}
-
-local board: Board.Board = {
-    height = 10,
-    width = 10,
-    cells = {},
-}
-for i = 1, 100 do
-    board.cells[i] = {
-        isCleared = false,
-        isFlagged = false,
-        isMine = false,
-    }
-end
-BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20, 1234))
-
-local initialGameState: GameState = {
-    boardState = board,
-}
-local boardReducer = Rodux.createReducer(initialGameState, {
-    CellsCleared = function(board: Board.Board, action: CellsClearedAction)
-        -- TODO: cell clear logic
-        local newBoard = TableUtil.Copy(board, true)
-
-        for _, index in action.indices do
-            local cell = BoardTransforms.getCellFromIndex(newBoard, index)
-            cell.isCleared = true
-        end
-
-        return newBoard
-    end,
-})
-local reducer = Rodux.combineReducers({
-    boardState = boardReducer,
-})
-
-function cellsCleared(indices: {number}): CellsClearedAction
-    return {
-        type = "CellsCleared",
-        indices = indices,
-        shouldReplicate = true,
-    }
-end
-
 
 function main()
-    local boardStore = Rodux.Store.new(reducer, initialGameState, {
-        Rodux.loggerMiddleware,
+    Players.PlayerAdded:Wait()
+    task.wait(1)
+
+    local board = createBoard()
+    for _, player in Players:GetPlayers() do
+        replicateBoard(board, player)
+    end
+    
+    local initialGameState: GameStore.GameState = {
+        boardState = board,
+    }
+    local boardStore = Rodux.Store.new(GameStore.reducer, initialGameState, {
+        -- Rodux.loggerMiddleware,
         replicatorMiddleware,
     })
 
-    Players.PlayerAdded:Wait()
-    task.wait(1)
     print("dispatching on server")
-    boardStore:dispatch(cellsCleared({1}))
+    boardStore:dispatch(GameStore.Actions.cellsCleared({1}))
 
     while true do
         -- TODO: round logic
-        -- TODO: visualize minesweeper boards
-        -- TODO: event handling
         task.wait()
     end
 end
 
+function createBoard(): Board.Board
+    local board: Board.Board = {
+        height = 10,
+        width = 10,
+        cells = {},
+    }
+    for i = 1, 100 do
+        board.cells[i] = {
+            isCleared = false,
+            isFlagged = false,
+            isMine = false,
+        }
+    end
+    BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20, 1234))
 
-function replicatorMiddleware(nextDispatch, store: GameState): any
-    return function(action: Action)
+    return board
+end
+
+function replicateBoard(board: Board.Board, player: Player)
+    boardInitialized:FireClient(player, board)
+end
+
+function replicatorMiddleware(nextDispatch, store: GameStore.GameState): any
+    return function(action: GameStore.Action)
         if action.shouldReplicate then
             boardStateChanged:FireAllClients(action)
         end
