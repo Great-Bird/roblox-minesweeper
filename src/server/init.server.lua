@@ -1,5 +1,6 @@
 --!strict
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Board = require(ReplicatedStorage.Shared.components.Board)
@@ -8,7 +9,7 @@ local Net = require(ReplicatedStorage.Packages.Net)
 local Rodux = require(ReplicatedStorage.Shared.modules.Rodux)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 
-local gameStateChanged = Net:RemoteEvent("GameStateChanged")
+local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
 type GameState = {
     boardState: Board.Board,
 }
@@ -32,7 +33,7 @@ for i = 1, 100 do
         isMine = false,
     }
 end
-BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20))
+BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20, 1234))
 
 local initialGameState: GameState = {
     boardState = board,
@@ -40,7 +41,7 @@ local initialGameState: GameState = {
 local boardReducer = Rodux.createReducer(initialGameState, {
     CellsCleared = function(board: Board.Board, action: CellsClearedAction)
         -- TODO: cell clear logic
-        local newBoard = TableUtil.Copy(board)
+        local newBoard = TableUtil.Copy(board, true)
 
         for _, index in action.indices do
             local cell = BoardTransforms.getCellFromIndex(newBoard, index)
@@ -69,6 +70,9 @@ function main()
         replicatorMiddleware,
     })
 
+    Players.PlayerAdded:Wait()
+    task.wait(1)
+    print("dispatching on server")
     boardStore:dispatch(cellsCleared({1}))
 
     while true do
@@ -83,7 +87,7 @@ end
 function replicatorMiddleware(nextDispatch, store: GameState): any
     return function(action: Action)
         if action.shouldReplicate then
-            gameStateChanged:FireAllClients(action)
+            boardStateChanged:FireAllClients(action)
         end
         return nextDispatch(action)
     end

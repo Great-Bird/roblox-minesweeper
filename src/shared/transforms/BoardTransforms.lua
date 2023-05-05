@@ -25,12 +25,13 @@ function BoardTransforms.getCellFromIndex(board: Board.Board, index: number): Bo
 end
 
 function BoardTransforms.placeMinesAtIndices(board: Board.Board, indices: {number})
-    for index in indices do
+    for _, index in indices do
         board.cells[index].isMine = true
     end
 end
 
 function BoardTransforms.getRandomUniqueCellIndices(board: Board.Board, indexAmount: number, seed: number?): {number}
+    seed = seed or os.time()
     local random = Random.new(seed)
 
     local cellCount = board.height * board.width
@@ -38,7 +39,7 @@ function BoardTransforms.getRandomUniqueCellIndices(board: Board.Board, indexAmo
     for i = 1, cellCount do
         indices[i] = i
     end
-    
+
     -- shuffle indices
     -- algorithm used: Fisher-Yates shuffle
     -- https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
@@ -51,6 +52,7 @@ function BoardTransforms.getRandomUniqueCellIndices(board: Board.Board, indexAmo
     for i = 1, indexAmount do
         randomIndices[i] = indices[i]
     end
+
     return randomIndices
 end
 
