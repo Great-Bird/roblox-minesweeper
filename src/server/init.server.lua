@@ -3,36 +3,61 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Board = require(ReplicatedStorage.Shared.components.Board)
-local Net = require(ReplicatedStorage.Shared.modules.Packages.net)
+local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
+local Net = require(ReplicatedStorage.Packages.Net)
 local Rodux = require(ReplicatedStorage.Shared.modules.Rodux)
+local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 
 local gameStateChanged = Net:RemoteEvent("GameStateChanged")
-
 type GameState = {
     boardState: Board.Board,
 }
 type Action = {
     type: string,
-    shouldReplicate: true?
+    shouldReplicate: boolean?
+}
+type CellsClearedAction = Action & {
+    indices: {number},
 }
 
+local board: Board.Board = {
+    height = 10,
+    width = 10,
+    cells = {},
+}
+for i = 1, 100 do
+    board.cells[i] = {
+        isCleared = false,
+        isFlagged = false,
+        isMine = false,
+    }
+end
+BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20))
+
 local initialGameState: GameState = {
-    boardState = Board.create(10, 10, 20),
+    boardState = board,
 }
 local boardReducer = Rodux.createReducer(initialGameState, {
-    CellCleared = function(board: Board.Board, action: Action)
+    CellsCleared = function(board: Board.Board, action: CellsClearedAction)
         -- TODO: cell clear logic
-        -- local newBoard = Board.create()
+        local newBoard = TableUtil.Copy(board)
+
+        for _, index in action.indices do
+            local cell = BoardTransforms.getCellFromIndex(newBoard, index)
+            cell.isCleared = true
+        end
+
+        return newBoard
     end,
 })
 local reducer = Rodux.combineReducers({
     boardState = boardReducer,
 })
 
-function cellCleared(index: number): Action
+function cellsCleared(indices: {number}): CellsClearedAction
     return {
-        type = "CellCleared",
-        index = index,
+        type = "CellsCleared",
+        indices = indices,
         shouldReplicate = true,
     }
 end
@@ -44,7 +69,7 @@ function main()
         replicatorMiddleware,
     })
 
-    boardStore:dispatch(cellCleared(1))
+    boardStore:dispatch(cellsCleared({1}))
 
     while true do
         -- TODO: round logic

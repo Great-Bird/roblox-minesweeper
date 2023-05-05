@@ -5,9 +5,14 @@ registry = "test"
 [[package]]
 name = "bird/roblox-minesweeper"
 version = "0.1.0"
-dependencies = [["net", "sleitnick/net@0.1.0"]]
+dependencies = [["Net", "sleitnick/net@0.1.0"], ["TableUtil", "sleitnick/table-util@1.2.0"]]
 
 [[package]]
 name = "sleitnick/net"
 version = "0.1.0"
+dependencies = []
+
+[[package]]
+name = "sleitnick/table-util"
+version = "1.2.0"
 dependencies = []
