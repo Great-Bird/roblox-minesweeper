@@ -16,7 +16,6 @@ end
 function PhysicalBoardTransforms.visualizeCellsCleared(physicalBoard: PhysicalBoard.PhysicalBoard, indices: {number})
     for _, index in indices do
         local part = physicalBoard.cells[index]
-        part.Color = Color3.new(0.5, 0.5, 0.5)
         part.Transparency = 0.6
     end
 end

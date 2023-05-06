@@ -24,6 +24,16 @@ function BoardTransforms.getCellFromIndex(board: Board.Board, index: number): Bo
     return board.cells[index]
 end
 
+function BoardTransforms.getMineIndices(board: Board.Board): {number}
+    local indices = {}
+    for index, cell in board.cells do
+        if cell.isMine then
+            table.insert(indices, index)
+        end
+    end
+    return indices
+end
+
 function BoardTransforms.placeMinesAtIndices(board: Board.Board, indices: {number})
     for _, index in indices do
         board.cells[index].isMine = true

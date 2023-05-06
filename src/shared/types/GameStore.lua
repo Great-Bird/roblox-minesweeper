@@ -17,15 +17,17 @@ export type Action = {
 export type CellsClearedAction = Action & {
     indices: {number},
 }
+export type RoundStartedAction = Action & {
+    newBoard: Board.Board,
+}
 
 local GameStore = {
     Actions = {},
 }
 
 GameStore.boardReducer = Rodux.createReducer({}, {
-    CellsCleared = function(board: Board.Board, action: CellsClearedAction)
-        -- TODO: cell clear logic
-        local newBoard = TableUtil.Copy(board, true)
+    CellsCleared = function(boardState: Board.Board, action: CellsClearedAction)
+        local newBoard = TableUtil.Copy(boardState, true)
 
         for _, index in action.indices do
             local cell = BoardTransforms.getCellFromIndex(newBoard, index)
@@ -34,11 +36,22 @@ GameStore.boardReducer = Rodux.createReducer({}, {
 
         return newBoard
     end,
+    RoundStarted = function(boardState: Board.Board, action: RoundStartedAction)
+        return action.newBoard
+    end
 })
 
 GameStore.reducer = Rodux.combineReducers({
     boardState = GameStore.boardReducer,
 })
+
+function GameStore.Actions.roundStarted(newBoard: Board.Board): RoundStartedAction
+    return {
+        type = "RoundStarted",
+        newBoard = newBoard,
+        shouldReplicate = true,
+    }
+end
 
 function GameStore.Actions.cellsCleared(indices: {number}): CellsClearedAction
     return {

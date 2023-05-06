@@ -28,13 +28,14 @@ function main()
         -- Rodux.loggerMiddleware,
         replicatorMiddleware,
     })
-
     
     while true do
         -- TODO: round logic
-        print("dispatching on server")
-        boardStore:dispatch(GameStore.Actions.cellsCleared({math.random(1, 100)}))
-        task.wait(1)
+        print("new Board()")
+        -- boardStore:dispatch(GameStore.Actions.cellsCleared({math.random(1, 100)}))
+        local newBoard = createBoard()
+        boardStore:dispatch(GameStore.Actions.roundStarted(newBoard))
+        task.wait(2)
     end
 end
 
@@ -51,7 +52,7 @@ function createBoard(): Board.Board
             isMine = false,
         }
     end
-    BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20, 1234))
+    BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20, os.time()))
 
     return board
 end

@@ -14,21 +14,21 @@ local Rodux = require(ReplicatedStorage.Packages.Rodux)
 local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
 
-local physicalBoard: PhysicalBoard.PhysicalBoard = nil
+local currentPhysicalBoard: PhysicalBoard.PhysicalBoard = nil
 
 function main()
-    Net:Connect("BoardInitialized", function(board: Board.Board)
+    boardInitialized.OnClientEvent:Connect(function(board: Board.Board)
         local initialState: GameStore.GameState = {
             boardState = board,
         }
         local store = Rodux.Store.new(GameStore.reducer, initialState, {
-            Rodux.loggerMiddleware,
+            -- Rodux.loggerMiddleware,
             visualizerMiddleware :: any,
         })
 
-        physicalBoard = createBoardVisualization(board)
+        currentPhysicalBoard = createBoardVisualization(board)
 
-        Net:Connect("BoardStateChanged", function(action)
+        boardStateChanged.OnClientEvent:Connect(function(action)
             print(`Received action`, action)
             store:dispatch(action)
         end)
@@ -38,7 +38,10 @@ end
 function visualizerMiddleware(nextDispatch, store)
     return function(action)
         if action.type == "CellsCleared" then
-            PhysicalBoardTransforms.visualizeCellsCleared(physicalBoard, action.indices)
+            PhysicalBoardTransforms.visualizeCellsCleared(currentPhysicalBoard, action.indices)
+        elseif action.type == "RoundStarted" then
+            currentPhysicalBoard.model:Destroy()
+            currentPhysicalBoard = createBoardVisualization(action.newBoard)
         end
         return nextDispatch(action)
     end
@@ -46,7 +49,7 @@ end
 
 function createBoardVisualization(board: Board.Board): PhysicalBoard.PhysicalBoard
     local root = CFrame.new()
-    local studsOffset = 6
+    local studsOffset = 5
 
     local model = Instance.new("Model")
     model.Name = "Board"
@@ -66,10 +69,15 @@ function createBoardVisualization(board: Board.Board): PhysicalBoard.PhysicalBoa
         cells[index] = part
     end
 
-    return {
+    local physicalBoard: PhysicalBoard.PhysicalBoard = {
         model = model,
         cells = cells,
     }
+
+    local mineIndices = BoardTransforms.getMineIndices(board)
+    PhysicalBoardTransforms.visualizeMines(physicalBoard, mineIndices)
+
+    return physicalBoard
 end
 
 main()
