@@ -7,3 +7,4 @@ realm = "shared"
 [dependencies]
 Net = "sleitnick/net@0.1.0"
 TableUtil = "sleitnick/table-util@1.2.0"
+Rodux = "roblox/rodux@3.0.0"
