@@ -7,4 +7,7 @@
 /*.rbxl.lock
 
 # Luau LSP source map
-sourcemap.json
+/sourcemap.json
+
+# Wally packages
+/Packages
