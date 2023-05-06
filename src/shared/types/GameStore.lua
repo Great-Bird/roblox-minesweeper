@@ -3,7 +3,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Board = require(ReplicatedStorage.Shared.types.Board)
-local Rodux = require(ReplicatedStorage.Shared.modules.Rodux)
+local Rodux = require(ReplicatedStorage.Packages.Rodux)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 

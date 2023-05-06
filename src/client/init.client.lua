@@ -1,15 +1,20 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 
-local Net = require(ReplicatedStorage.Packages.Net)
-local Rodux = require(ReplicatedStorage.Shared.modules.Rodux)
-local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 local Board = require(ReplicatedStorage.Shared.types.Board)
+local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
+local Net = require(ReplicatedStorage.Packages.Net)
+local PhysicalBoard = require(StarterPlayer.StarterPlayerScripts.Client.types.PhysicalBoard)
+local PhysicalBoardTransforms = require(StarterPlayer.StarterPlayerScripts.Client.transforms.PhysicalBoardTransforms)
+local Rodux = require(ReplicatedStorage.Packages.Rodux)
 
 local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
+
+local physicalBoard: PhysicalBoard.PhysicalBoard = nil
 
 function main()
     Net:Connect("BoardInitialized", function(board: Board.Board)
@@ -18,30 +23,28 @@ function main()
         }
         local store = Rodux.Store.new(GameStore.reducer, initialState, {
             Rodux.loggerMiddleware,
-            visualizerMiddleware,
+            visualizerMiddleware :: any,
         })
 
-        local boardModel = visualizeBoard(board)
+        physicalBoard = createBoardVisualization(board)
 
         Net:Connect("BoardStateChanged", function(action)
             print(`Received action`, action)
             store:dispatch(action)
-            boardModel:Destroy()
-            boardModel = visualizeBoard(store:getState().boardState)
         end)
     end)
 end
 
-function visualizerMiddleware(nextDispatch, store: GameStore.GameState): any
-    return function(action: GameStore.Action)
+function visualizerMiddleware(nextDispatch, store)
+    return function(action)
         if action.type == "CellsCleared" then
-            
+            PhysicalBoardTransforms.visualizeCellsCleared(physicalBoard, action.indices)
         end
         return nextDispatch(action)
     end
 end
 
-function visualizeBoard(board: Board.Board)
+function createBoardVisualization(board: Board.Board): PhysicalBoard.PhysicalBoard
     local root = CFrame.new()
     local studsOffset = 6
 
@@ -49,6 +52,7 @@ function visualizeBoard(board: Board.Board)
     model.Name = "Board"
     model.Parent = workspace
 
+    local cells: { BasePart } = {}
     for index, cell in board.cells do
         local coordinates = BoardTransforms.indexToCoordinates(board, index)
         local row, column = coordinates.row, coordinates.column
@@ -57,17 +61,15 @@ function visualizeBoard(board: Board.Board)
         part.Anchored = true
         part.Size = Vector3.new(4, 1, 4)
         part.CFrame = root + Vector3.xAxis*column*studsOffset + Vector3.zAxis*row*studsOffset
-        if cell.isMine then
-            part.Color = Color3.new(0.76, 0.133, 0.133)
-        end
         part.Parent = model
+
+        cells[index] = part
     end
 
-    return model
-end
-
-function visualizeCellsCleared(action: GameStore.CellsClearedAction)
-    
+    return {
+        model = model,
+        cells = cells,
+    }
 end
 
 main()

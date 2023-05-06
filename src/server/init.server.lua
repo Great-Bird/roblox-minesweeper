@@ -6,16 +6,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Board = require(ReplicatedStorage.Shared.types.Board)
 local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 local Net = require(ReplicatedStorage.Packages.Net)
-local Rodux = require(ReplicatedStorage.Shared.modules.Rodux)
+local Rodux = require(ReplicatedStorage.Packages.Rodux)
 local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
 
 local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
 
 function main()
+    -- TODO: let clients request the payload once they're ready for it
     Players.PlayerAdded:Wait()
     task.wait(1)
-
     local board = createBoard()
     for _, player in Players:GetPlayers() do
         replicateBoard(board, player)
@@ -29,12 +29,12 @@ function main()
         replicatorMiddleware,
     })
 
-    print("dispatching on server")
-    boardStore:dispatch(GameStore.Actions.cellsCleared({1}))
-
+    
     while true do
         -- TODO: round logic
-        task.wait()
+        print("dispatching on server")
+        boardStore:dispatch(GameStore.Actions.cellsCleared({math.random(1, 100)}))
+        task.wait(1)
     end
 end
 
