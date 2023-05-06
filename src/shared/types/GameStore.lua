@@ -17,7 +17,7 @@ export type Action = {
 export type CellsClearedAction = Action & {
     indices: {number},
 }
-export type RoundStartedAction = Action & {
+export type BoardReplacedAction = Action & {
     newBoard: Board.Board,
 }
 
@@ -36,18 +36,14 @@ GameStore.boardReducer = Rodux.createReducer({}, {
 
         return newBoard
     end,
-    RoundStarted = function(boardState: Board.Board, action: RoundStartedAction)
+    BoardReplaced = function(boardState: Board.Board, action: BoardReplacedAction)
         return action.newBoard
     end
 })
 
-GameStore.reducer = Rodux.combineReducers({
-    boardState = GameStore.boardReducer,
-})
-
-function GameStore.Actions.roundStarted(newBoard: Board.Board): RoundStartedAction
+function GameStore.Actions.boardReplaced(newBoard: Board.Board): BoardReplacedAction
     return {
-        type = "RoundStarted",
+        type = "BoardReplaced",
         newBoard = newBoard,
         shouldReplicate = true,
     }

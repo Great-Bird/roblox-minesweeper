@@ -21,10 +21,13 @@ function main()
         replicateBoard(board, player)
     end
     
+    local reducer = Rodux.combineReducers({
+        boardState = GameStore.boardReducer,
+    })
     local initialGameState: GameStore.GameState = {
         boardState = board,
     }
-    local boardStore = Rodux.Store.new(GameStore.reducer, initialGameState, {
+    local boardStore = Rodux.Store.new(reducer, initialGameState, {
         -- Rodux.loggerMiddleware,
         replicatorMiddleware,
     })
@@ -34,7 +37,7 @@ function main()
         print("new Board()")
         -- boardStore:dispatch(GameStore.Actions.cellsCleared({math.random(1, 100)}))
         local newBoard = createBoard()
-        boardStore:dispatch(GameStore.Actions.roundStarted(newBoard))
+        boardStore:dispatch(GameStore.Actions.boardReplaced(newBoard))
         task.wait(2)
     end
 end

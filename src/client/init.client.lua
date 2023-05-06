@@ -5,28 +5,26 @@ local StarterPlayer = game:GetService("StarterPlayer")
 
 local Board = require(ReplicatedStorage.Shared.types.Board)
 local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
-local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
 local Net = require(ReplicatedStorage.Packages.Net)
 local PhysicalBoard = require(StarterPlayer.StarterPlayerScripts.Client.types.PhysicalBoard)
 local PhysicalBoardTransforms = require(StarterPlayer.StarterPlayerScripts.Client.transforms.PhysicalBoardTransforms)
+local GameStoreClient = require(StarterPlayer.StarterPlayerScripts.Client.types.GameStoreClient)
 local Rodux = require(ReplicatedStorage.Packages.Rodux)
 
 local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
 
-local currentPhysicalBoard: PhysicalBoard.PhysicalBoard = nil
-
 function main()
     boardInitialized.OnClientEvent:Connect(function(board: Board.Board)
-        local initialState: GameStore.GameState = {
+        local initialState: GameStoreClient.ClientGameState = {
             boardState = board,
+            physicalBoard = createBoardVisualization(board),
         }
-        local store = Rodux.Store.new(GameStore.reducer, initialState, {
+
+        local store = Rodux.Store.new(GameStoreClient.reducer, initialState, {
             -- Rodux.loggerMiddleware,
             visualizerMiddleware :: any,
         })
-
-        currentPhysicalBoard = createBoardVisualization(board)
 
         boardStateChanged.OnClientEvent:Connect(function(action)
             print(`Received action`, action)
@@ -38,10 +36,11 @@ end
 function visualizerMiddleware(nextDispatch, store)
     return function(action)
         if action.type == "CellsCleared" then
-            PhysicalBoardTransforms.visualizeCellsCleared(currentPhysicalBoard, action.indices)
-        elseif action.type == "RoundStarted" then
-            currentPhysicalBoard.model:Destroy()
-            currentPhysicalBoard = createBoardVisualization(action.newBoard)
+            local state: GameStoreClient.ClientGameState = store:getState()
+            PhysicalBoardTransforms.visualizeCellsCleared(state.physicalBoard, action.indices)
+        elseif action.type == "BoardReplaced" then
+            local newPhysicalBoard = createBoardVisualization(action.newBoard)
+            store:dispatch(GameStoreClient.Actions.physicalBoardReplaced(newPhysicalBoard))
         end
         return nextDispatch(action)
     end
