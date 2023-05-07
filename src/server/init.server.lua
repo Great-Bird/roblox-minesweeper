@@ -13,71 +13,61 @@ local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
 
 function main()
-    -- TODO: let clients request the payload once they're ready for it
-    Players.PlayerAdded:Wait()
-    task.wait(1)
-    local board = createBoard()
-    for _, player in Players:GetPlayers() do
-        replicateBoard(board, player)
-    end
-    
-    local reducer = Rodux.combineReducers({
-        boardState = GameStore.boardReducer,
-    })
-    local initialGameState: GameStore.GameState = {
-        boardState = board,
-    }
-    local boardStore = Rodux.Store.new(reducer, initialGameState, {
-        -- Rodux.loggerMiddleware,
-        replicatorMiddleware,
-    })
-    
-    while true do
-        -- TODO: round logic
-        print("new Board()")
-        -- boardStore:dispatch(GameStore.Actions.cellsCleared({math.random(1, 100)}))
-        local newBoard = createBoard()
-        local indices = BoardTransforms.getRandomUniqueCellIndices(newBoard, 50, 1234)
-        for _, index in indices do
-            boardStore:dispatch(GameStore.Actions.cellsCleared({index}))
-            task.wait(0.5)
-        end
+	-- TODO: let clients request the payload once they're ready for it
+	Players.PlayerAdded:Wait()
+	task.wait(1)
+	local board = createBoard()
+	for _, player in Players:GetPlayers() do
+		replicateBoard(board, player)
+	end
 
-        boardStore:dispatch(GameStore.Actions.boardReplaced(newBoard))
-        task.wait(2)
-    end
+	local reducer = Rodux.combineReducers({
+		boardState = GameStore.boardReducer,
+	})
+	local initialGameState: GameStore.GameState = {
+		boardState = board,
+	}
+	local boardStore = Rodux.Store.new(reducer, initialGameState, {
+		replicatorMiddleware,
+	})
+
+	-- TODO: round logic
+	local indices = table.create(100)
+	for i = 1, 100 do
+		indices[i] = i
+	end
+	boardStore:dispatch(GameStore.Actions.cellsCleared(indices))
 end
 
 function createBoard(): Board.Board
-    local board: Board.Board = {
-        height = 10,
-        width = 10,
-        cells = {},
-    }
-    for i = 1, 100 do
-        board.cells[i] = {
-            isCleared = false,
-            isFlagged = false,
-            isMine = false,
-        }
-    end
-    BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20, os.time()))
+	local board: Board.Board = {
+		height = 10,
+		width = 10,
+		cells = {},
+	}
+	for i = 1, 100 do
+		board.cells[i] = {
+			isCleared = false,
+			isFlagged = false,
+			isMine = false,
+		}
+	end
+	BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20, os.time()))
 
-    return board
+	return board
 end
 
 function replicateBoard(board: Board.Board, player: Player)
-    boardInitialized:FireClient(player, board)
+	boardInitialized:FireClient(player, board)
 end
 
 function replicatorMiddleware(nextDispatch, store: GameStore.GameState): any
-    return function(action: GameStore.Action)
-        if action.shouldReplicate then
-            boardStateChanged:FireAllClients(action)
-        end
-        return nextDispatch(action)
-    end
+	return function(action: GameStore.Action)
+		if action.shouldReplicate then
+			boardStateChanged:FireAllClients(action)
+		end
+		return nextDispatch(action)
+	end
 end
-
 
 main()

@@ -26,6 +26,7 @@ function PhysicalBoardTransforms.visualizeCellsCleared(physicalBoard: PhysicalBo
 
         local surfaceGui = Instance.new("SurfaceGui")
         surfaceGui.Face = Enum.NormalId.Top
+        surfaceGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
         surfaceGui.Parent = part
 
         local text = Instance.new("TextLabel")
@@ -38,12 +39,6 @@ function PhysicalBoardTransforms.visualizeCellsCleared(physicalBoard: PhysicalBo
         text.TextSize = 100
         text.Size = UDim2.fromScale(5, 5)
         text.Parent = surfaceGui
-
-        -- print("neighbors:", TableUtil.Map(BoardTransforms.getIndicesOfNeighbors(board, index), function(index)
-        --     return board.cells[index]
-        -- end))
-        -- print("neighboring mines:", neighboringMines)
-        -- print(`number to indicate: {#neighboringMines}`)
     end
 end
 
