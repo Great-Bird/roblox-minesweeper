@@ -3,11 +3,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 
+local BoardVisualizer = require(StarterPlayer.StarterPlayerScripts.Client.BoardVisualizer)
 local Board = require(ReplicatedStorage.Shared.types.Board)
-local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 local Net = require(ReplicatedStorage.Packages.Net)
-local PhysicalBoard = require(StarterPlayer.StarterPlayerScripts.Client.types.PhysicalBoard)
-local PhysicalBoardTransforms = require(StarterPlayer.StarterPlayerScripts.Client.transforms.PhysicalBoardTransforms)
 local GameStoreClient = require(StarterPlayer.StarterPlayerScripts.Client.types.GameStoreClient)
 local Rodux = require(ReplicatedStorage.Packages.Rodux)
 
@@ -18,7 +16,7 @@ function main()
     boardInitialized.OnClientEvent:Connect(function(board: Board.Board)
         local initialState: GameStoreClient.ClientGameState = {
             boardState = board,
-            physicalBoard = createBoardVisualization(board),
+            physicalBoard = BoardVisualizer.createBoardVisualization(board),
         }
 
         local store = Rodux.Store.new(GameStoreClient.reducer, initialState, {
@@ -35,48 +33,9 @@ end
 
 function visualizerMiddleware(nextDispatch, store)
     return function(action)
-        if action.type == "CellsCleared" then
-            local state: GameStoreClient.ClientGameState = store:getState()
-            PhysicalBoardTransforms.visualizeCellsCleared(state.physicalBoard, action.indices)
-        elseif action.type == "BoardReplaced" then
-            local newPhysicalBoard = createBoardVisualization(action.newBoard)
-            store:dispatch(GameStoreClient.Actions.physicalBoardReplaced(newPhysicalBoard))
-        end
+        BoardVisualizer.visualizeAction(action, store)
         return nextDispatch(action)
     end
-end
-
-function createBoardVisualization(board: Board.Board): PhysicalBoard.PhysicalBoard
-    local root = CFrame.new()
-    local studsOffset = 5
-
-    local model = Instance.new("Model")
-    model.Name = "Board"
-    model.Parent = workspace
-
-    local cells: { BasePart } = {}
-    for index, cell in board.cells do
-        local coordinates = BoardTransforms.indexToCoordinates(board, index)
-        local row, column = coordinates.row, coordinates.column
-
-        local part = Instance.new("Part")
-        part.Anchored = true
-        part.Size = Vector3.new(4, 1, 4)
-        part.CFrame = root + Vector3.xAxis*column*studsOffset + Vector3.zAxis*row*studsOffset
-        part.Parent = model
-
-        cells[index] = part
-    end
-
-    local physicalBoard: PhysicalBoard.PhysicalBoard = {
-        model = model,
-        cells = cells,
-    }
-
-    local mineIndices = BoardTransforms.getMineIndices(board)
-    PhysicalBoardTransforms.visualizeMines(physicalBoard, mineIndices)
-
-    return physicalBoard
 end
 
 main()

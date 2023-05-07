@@ -1,6 +1,8 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Board = require(ReplicatedStorage.Shared.types.Board)
 
 local BoardTransforms = {}
@@ -38,6 +40,26 @@ function BoardTransforms.placeMinesAtIndices(board: Board.Board, indices: {numbe
     for _, index in indices do
         board.cells[index].isMine = true
     end
+end
+
+function BoardTransforms.getIndicesOfNeighbors(board: Board.Board, index: number): {number}
+    local width = board.width
+    local adjacentIndices = {
+        index - width - 1, index - width, index - width + 1,
+        index - 1,                        index + 1,
+        index + width - 1, index + width, index + width + 1,
+    }
+
+    local neighborIndices = TableUtil.Filter(adjacentIndices, function(index2)
+        return index2 >= 0 and BoardTransforms.areIndicesAdjacent(board, index, index2)
+    end)
+    return neighborIndices
+end
+
+function BoardTransforms.areIndicesAdjacent(board: Board.Board, index1: number, index2: number): boolean
+    local coordinates1 = BoardTransforms.indexToCoordinates(board, index1)
+    local coordinates2 = BoardTransforms.indexToCoordinates(board, index2)
+    return math.abs(coordinates1.column - coordinates2.column) <= 1 and math.abs(coordinates1.row - coordinates2.row) <= 1
 end
 
 function BoardTransforms.getRandomUniqueCellIndices(board: Board.Board, indexAmount: number, seed: number?): {number}

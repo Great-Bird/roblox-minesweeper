@@ -37,6 +37,11 @@ function main()
         print("new Board()")
         -- boardStore:dispatch(GameStore.Actions.cellsCleared({math.random(1, 100)}))
         local newBoard = createBoard()
+        for i = 1, 10 do
+            boardStore:dispatch(GameStore.Actions.cellsCleared(BoardTransforms.getRandomUniqueCellIndices(newBoard, 1, os.time())))
+            task.wait(1)
+        end
+
         boardStore:dispatch(GameStore.Actions.boardReplaced(newBoard))
         task.wait(2)
     end
