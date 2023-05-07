@@ -51,9 +51,13 @@ function BoardTransforms.getIndicesOfNeighbors(board: Board.Board, index: number
     }
 
     local neighborIndices = TableUtil.Filter(adjacentIndices, function(index2)
-        return index2 >= 0 and BoardTransforms.areIndicesAdjacent(board, index, index2)
+        return BoardTransforms.isWithinBounds(board, index2) and BoardTransforms.areIndicesAdjacent(board, index, index2)
     end)
     return neighborIndices
+end
+
+function BoardTransforms.isWithinBounds(board: Board.Board, index: number): boolean
+    return index > 0 and index <= board.width * board.height
 end
 
 function BoardTransforms.areIndicesAdjacent(board: Board.Board, index1: number, index2: number): boolean

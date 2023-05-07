@@ -23,7 +23,27 @@ function PhysicalBoardTransforms.visualizeCellsCleared(physicalBoard: PhysicalBo
         local neighboringMines = TableUtil.Filter(BoardTransforms.getIndicesOfNeighbors(board, index), function(index: number)
             return BoardTransforms.getCellFromIndex(board, index).isMine
         end)
-        print(`number to indicate: {#neighboringMines}`)
+
+        local surfaceGui = Instance.new("SurfaceGui")
+        surfaceGui.Face = Enum.NormalId.Top
+        surfaceGui.Parent = part
+
+        local text = Instance.new("TextLabel")
+        text.AnchorPoint = Vector2.new(0.5, 0.5)
+        text.Position = UDim2.fromScale(0.5, 0.5)
+        text.Text = tostring(#neighboringMines)
+        text.BackgroundTransparency = 1
+        text.BorderSizePixel = 0
+        text.TextColor3 = Color3.new(0, 0, 0)
+        text.TextSize = 100
+        text.Size = UDim2.fromScale(5, 5)
+        text.Parent = surfaceGui
+
+        -- print("neighbors:", TableUtil.Map(BoardTransforms.getIndicesOfNeighbors(board, index), function(index)
+        --     return board.cells[index]
+        -- end))
+        -- print("neighboring mines:", neighboringMines)
+        -- print(`number to indicate: {#neighboringMines}`)
     end
 end
 
