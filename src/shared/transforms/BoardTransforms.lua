@@ -57,7 +57,7 @@ function BoardTransforms.getIndicesOfNeighbors(board: Board.Board, index: number
 end
 
 function BoardTransforms.isWithinBounds(board: Board.Board, index: number): boolean
-    return index > 0 and index <= board.width * board.height
+    return math.floor(index) == index and index > 0 and index <= board.width * board.height
 end
 
 function BoardTransforms.areIndicesAdjacent(board: Board.Board, index1: number, index2: number): boolean
