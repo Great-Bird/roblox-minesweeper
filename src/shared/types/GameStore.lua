@@ -20,6 +20,12 @@ export type CellsClearedAction = Action & {
 export type BoardReplacedAction = Action & {
     newBoard: Board.Board,
 }
+export type CellFlaggedAction = Action & {
+    index: number,
+}
+export type CellUnflaggedAction = Action & {
+    index: number,
+}
 
 local GameStore = {
     Actions = {},
@@ -36,9 +42,19 @@ GameStore.boardReducer = Rodux.createReducer({}, {
 
         return newBoard
     end,
+    CellFlagged = function(boardState: Board.Board, action: CellFlaggedAction)
+        local newBoard = TableUtil.Copy(boardState, true)
+        BoardTransforms.getCellFromIndex(newBoard, action.index).isFlagged = true
+        return newBoard
+    end,
+    CellUnflagged = function(boardState: Board.Board, action: CellUnflaggedAction)
+        local newBoard = TableUtil.Copy(boardState, true)
+        BoardTransforms.getCellFromIndex(newBoard, action.index).isFlagged = false
+        return newBoard
+    end,
     BoardReplaced = function(boardState: Board.Board, action: BoardReplacedAction)
         return action.newBoard
-    end
+    end,
 })
 
 function GameStore.Actions.boardReplaced(newBoard: Board.Board): BoardReplacedAction
@@ -53,6 +69,22 @@ function GameStore.Actions.cellsCleared(indices: {number}): CellsClearedAction
     return {
         type = "CellsCleared",
         indices = indices,
+        shouldReplicate = true,
+    }
+end
+
+function GameStore.Actions.cellFlagged(index: number): CellFlaggedAction
+    return {
+        type = "CellFlagged",
+        index = index,
+        shouldReplicate = true,
+    }
+end
+
+function GameStore.Actions.cellUnflagged(index: number): CellUnflaggedAction
+    return {
+        type = "CellUnflagged",
+        index = index,
         shouldReplicate = true,
     }
 end
