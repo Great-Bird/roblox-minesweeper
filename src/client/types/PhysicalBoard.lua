@@ -5,4 +5,6 @@ export type PhysicalBoard = {
     cells: { BasePart },
 }
 
-return nil
+local PhysicalBoard = {}
+
+return PhysicalBoard
