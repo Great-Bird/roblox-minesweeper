@@ -66,8 +66,8 @@ function BoardVisualizer.createBoardVisualization(board: Board.Board): PhysicalB
         cells = cells,
     }
 
-    local mineIndices = BoardTransforms.getMineIndices(board)
-    PhysicalBoardTransforms.visualizeMines(physicalBoard, mineIndices)
+    -- local mineIndices = BoardTransforms.getMineIndices(board)
+    -- PhysicalBoardTransforms.visualizeMines(physicalBoard, mineIndices)
 
     return physicalBoard
 end

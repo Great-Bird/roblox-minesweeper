@@ -34,39 +34,56 @@ function main()
 		replicatorMiddleware,
 	})
 
-    flagCellRequest.OnServerEvent:Connect(function(player: Player, index: unknown)
-        local boardState: Board.Board = gameStore:getState().boardState
-        if type(index) ~= "number" or not BoardTransforms.isWithinBounds(boardState, index) then
-            return
-        end
+	clearCellRequest.OnServerEvent:Connect(function(player: Player, index: unknown)
+		local boardState: Board.Board = gameStore:getState().boardState
+		if type(index) ~= "number" or not BoardTransforms.isWithinBounds(boardState, index) then
+			return
+		end
 
-        local cell = BoardTransforms.getCellFromIndex(boardState, index)
-        if cell.isFlagged then
-            return
-        end
+		local cell = BoardTransforms.getCellFromIndex(boardState, index)
+		if cell.isFlagged or cell.isCleared then
+			return
+		end
+		if cell.isMine then
+			warn("UH OH!!!!")
+			return
+		end
 
-        gameStore:dispatch(GameStore.Actions.cellFlagged(index))
-    end)
-    unflagCellRequest.OnServerEvent:Connect(function(player: Player, index: unknown)
-        local boardState: Board.Board = gameStore:getState().boardState
-        if type(index) ~= "number" or not BoardTransforms.isWithinBounds(boardState, index) then
-            return
-        end
+		gameStore:dispatch(GameStore.Actions.cellsCleared({ index }))
+	end)
+	flagCellRequest.OnServerEvent:Connect(function(player: Player, index: unknown)
+		local boardState: Board.Board = gameStore:getState().boardState
+		if type(index) ~= "number" or not BoardTransforms.isWithinBounds(boardState, index) then
+			return
+		end
 
-        local cell = BoardTransforms.getCellFromIndex(boardState, index)
-        if not cell.isFlagged then
-            return
-        end
+		local cell = BoardTransforms.getCellFromIndex(boardState, index)
+		if cell.isFlagged then
+			return
+		end
 
-        gameStore:dispatch(GameStore.Actions.cellUnflagged(index))
-    end)
+		gameStore:dispatch(GameStore.Actions.cellFlagged(index))
+	end)
+	unflagCellRequest.OnServerEvent:Connect(function(player: Player, index: unknown)
+		local boardState: Board.Board = gameStore:getState().boardState
+		if type(index) ~= "number" or not BoardTransforms.isWithinBounds(boardState, index) then
+			return
+		end
 
-	-- TODO: round logic
-	local indices = table.create(100)
-	for i = 1, 100 do
-		indices[i] = i
-	end
-	gameStore:dispatch(GameStore.Actions.cellsCleared(indices))
+		local cell = BoardTransforms.getCellFromIndex(boardState, index)
+		if not cell.isFlagged then
+			return
+		end
+
+		gameStore:dispatch(GameStore.Actions.cellUnflagged(index))
+	end)
+
+	-- testing code
+	-- local indices = table.create(100)
+	-- for i = 1, 100 do
+	-- 	indices[i] = i
+	-- end
+	-- gameStore:dispatch(GameStore.Actions.cellsCleared(indices))
 end
 
 function createBoard(): Board.Board
