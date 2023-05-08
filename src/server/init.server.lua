@@ -11,8 +11,9 @@ local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
 
 local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
-local flagCellRequested: RemoteEvent = Net:RemoteEvent("FlagCellRequested")
-local unflagCellRequested: RemoteEvent = Net:RemoteEvent("UnflagCellRequested")
+local flagCellRequest: RemoteEvent = Net:RemoteEvent("FlagCellRequest")
+local unflagCellRequest: RemoteEvent = Net:RemoteEvent("UnflagCellRequest")
+local clearCellRequest: RemoteEvent = Net:RemoteEvent("ClearCellRequest")
 
 function main()
 	-- TODO: let clients request the payload once they're ready for it
@@ -33,7 +34,7 @@ function main()
 		replicatorMiddleware,
 	})
 
-    flagCellRequested.OnServerEvent:Connect(function(player: Player, index: unknown)
+    flagCellRequest.OnServerEvent:Connect(function(player: Player, index: unknown)
         local boardState: Board.Board = gameStore:getState().boardState
         if type(index) ~= "number" or not BoardTransforms.isWithinBounds(boardState, index) then
             return
@@ -46,12 +47,12 @@ function main()
 
         gameStore:dispatch(GameStore.Actions.cellFlagged(index))
     end)
-    unflagCellRequested.OnServerEvent:Connect(function(player: Player, index: unknown)
+    unflagCellRequest.OnServerEvent:Connect(function(player: Player, index: unknown)
         local boardState: Board.Board = gameStore:getState().boardState
         if type(index) ~= "number" or not BoardTransforms.isWithinBounds(boardState, index) then
             return
         end
-        
+
         local cell = BoardTransforms.getCellFromIndex(boardState, index)
         if not cell.isFlagged then
             return

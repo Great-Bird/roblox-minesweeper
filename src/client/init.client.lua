@@ -12,8 +12,9 @@ local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransfo
 
 local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
-local flagCellRequested: RemoteEvent = Net:RemoteEvent("FlagCellRequested")
-local unflagCellRequested: RemoteEvent = Net:RemoteEvent("UnflagCellRequested")
+local clearCellRequest: RemoteEvent = Net:RemoteEvent("ClearCellRequest")
+local flagCellRequest: RemoteEvent = Net:RemoteEvent("FlagCellRequest")
+local unflagCellRequest: RemoteEvent = Net:RemoteEvent("UnflagCellRequest")
 
 function main()
     boardInitialized.OnClientEvent:Connect(function(board: Board.Board)
@@ -35,8 +36,10 @@ function main()
         -- local cellsWithMines = BoardTransforms.getMineIndices(board)
         -- for _, index in cellsWithMines do
         --     task.wait(0.25)
-        --     flagCellRequested:FireServer(index)
+        --     flagCellRequest:FireServer(index)
         -- end
+
+        for 
     end)
 end
 
