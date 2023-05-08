@@ -22,6 +22,14 @@ local actionTypeToVisualizer: { [string]: ActionVisualizer } = {
         local newPhysicalBoard = BoardVisualizer.createBoardVisualization(action.newBoard)
         store:dispatch(GameStoreClient.Actions.physicalBoardReplaced(newPhysicalBoard))
     end,
+    CellFlagged = function(action: GameStore.CellFlaggedAction, store)
+        local state: GameStoreClient.ClientGameState = store:getState()
+        PhysicalBoardTransforms.setFlagVisibility(state.physicalBoard, action.index, true)
+    end,
+    CellUnflagged = function(action: GameStore.CellUnflaggedAction, store)
+        local state: GameStoreClient.ClientGameState = store:getState()
+        PhysicalBoardTransforms.setFlagVisibility(state.physicalBoard, action.index, false)
+    end,
 }
 
 function BoardVisualizer.visualizeAction(action: GameStore.Action, store)

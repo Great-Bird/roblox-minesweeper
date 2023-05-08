@@ -8,6 +8,31 @@ local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransfo
 local Board = require(ReplicatedStorage.Shared.types.Board)
 local PhysicalBoard = require(StarterPlayer.StarterPlayerScripts.Client.types.PhysicalBoard)
 
+local function addIndicator(part: BasePart)
+    local surfaceGui = Instance.new("SurfaceGui")
+    surfaceGui.Face = Enum.NormalId.Top
+    surfaceGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+    surfaceGui.Name = "IndicatorHolder"
+    surfaceGui.Parent = part
+
+    local text = Instance.new("TextLabel")
+    text.AnchorPoint = Vector2.new(0.5, 0.5)
+    text.Position = UDim2.fromScale(0.5, 0.5)
+    text.BackgroundTransparency = 1
+    text.BorderSizePixel = 0
+    text.TextColor3 = Color3.new(0, 0, 0)
+    text.TextSize = 100
+    text.Size = UDim2.fromScale(5, 5)
+    text.Name = "Indicator"
+    text.Parent = surfaceGui
+
+    return text
+end
+
+local function getIndicator(part: BasePart)
+    return part:FindFirstChild("Indicator", true)
+end
+
 local PhysicalBoardTransforms = {}
 
 function PhysicalBoardTransforms.visualizeMines(physicalBoard: PhysicalBoard.PhysicalBoard, indices: {number})
@@ -24,21 +49,22 @@ function PhysicalBoardTransforms.visualizeCellsCleared(physicalBoard: PhysicalBo
             return BoardTransforms.getCellFromIndex(board, index).isMine
         end)
 
-        local surfaceGui = Instance.new("SurfaceGui")
-        surfaceGui.Face = Enum.NormalId.Top
-        surfaceGui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-        surfaceGui.Parent = part
-
-        local text = Instance.new("TextLabel")
-        text.AnchorPoint = Vector2.new(0.5, 0.5)
-        text.Position = UDim2.fromScale(0.5, 0.5)
+        local text = addIndicator(part)
         text.Text = tostring(#neighboringMines)
-        text.BackgroundTransparency = 1
-        text.BorderSizePixel = 0
-        text.TextColor3 = Color3.new(0, 0, 0)
-        text.TextSize = 100
-        text.Size = UDim2.fromScale(5, 5)
-        text.Parent = surfaceGui
+    end
+end
+
+function PhysicalBoardTransforms.setFlagVisibility(physicalBoard: PhysicalBoard.PhysicalBoard, index: number, toggle: boolean)
+    local cell: BasePart = physicalBoard.cells[index]
+    local indicator = getIndicator(cell)
+    if indicator == nil then
+        indicator = addIndicator(cell)
+    end
+
+    if toggle == true then
+        indicator.Text = "F"
+    else
+        indicator.Text = ""
     end
 end
 

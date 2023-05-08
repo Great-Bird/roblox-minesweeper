@@ -8,9 +8,12 @@ local Board = require(ReplicatedStorage.Shared.types.Board)
 local Net = require(ReplicatedStorage.Packages.Net)
 local GameStoreClient = require(StarterPlayer.StarterPlayerScripts.Client.types.GameStoreClient)
 local Rodux = require(ReplicatedStorage.Packages.Rodux)
+local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 
 local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
+local flagCellRequested: RemoteEvent = Net:RemoteEvent("FlagCellRequested")
+local unflagCellRequested: RemoteEvent = Net:RemoteEvent("UnflagCellRequested")
 
 function main()
     boardInitialized.OnClientEvent:Connect(function(board: Board.Board)
@@ -20,7 +23,6 @@ function main()
         }
 
         local store = Rodux.Store.new(GameStoreClient.reducer, initialState, {
-            -- Rodux.loggerMiddleware,
             visualizerMiddleware :: any,
         })
 
@@ -28,6 +30,13 @@ function main()
             print(`Received action`, action)
             store:dispatch(action)
         end)
+
+        -- testing code
+        -- local cellsWithMines = BoardTransforms.getMineIndices(board)
+        -- for _, index in cellsWithMines do
+        --     task.wait(0.25)
+        --     flagCellRequested:FireServer(index)
+        -- end
     end)
 end
 

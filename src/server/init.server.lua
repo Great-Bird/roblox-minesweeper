@@ -11,6 +11,8 @@ local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
 
 local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
+local flagCellRequested: RemoteEvent = Net:RemoteEvent("FlagCellRequested")
+local unflagCellRequested: RemoteEvent = Net:RemoteEvent("UnflagCellRequested")
 
 function main()
 	-- TODO: let clients request the payload once they're ready for it
@@ -27,16 +29,43 @@ function main()
 	local initialGameState: GameStore.GameState = {
 		boardState = board,
 	}
-	local boardStore = Rodux.Store.new(reducer, initialGameState, {
+	local gameStore = Rodux.Store.new(reducer, initialGameState, {
 		replicatorMiddleware,
 	})
+
+    flagCellRequested.OnServerEvent:Connect(function(player: Player, index: unknown)
+        local boardState: Board.Board = gameStore:getState().boardState
+        if type(index) ~= "number" or not BoardTransforms.isWithinBounds(boardState, index) then
+            return
+        end
+
+        local cell = BoardTransforms.getCellFromIndex(boardState, index)
+        if cell.isFlagged then
+            return
+        end
+
+        gameStore:dispatch(GameStore.Actions.cellFlagged(index))
+    end)
+    unflagCellRequested.OnServerEvent:Connect(function(player: Player, index: unknown)
+        local boardState: Board.Board = gameStore:getState().boardState
+        if type(index) ~= "number" or not BoardTransforms.isWithinBounds(boardState, index) then
+            return
+        end
+        
+        local cell = BoardTransforms.getCellFromIndex(boardState, index)
+        if not cell.isFlagged then
+            return
+        end
+
+        gameStore:dispatch(GameStore.Actions.cellUnflagged(index))
+    end)
 
 	-- TODO: round logic
 	local indices = table.create(100)
 	for i = 1, 100 do
 		indices[i] = i
 	end
-	boardStore:dispatch(GameStore.Actions.cellsCleared(indices))
+	gameStore:dispatch(GameStore.Actions.cellsCleared(indices))
 end
 
 function createBoard(): Board.Board
