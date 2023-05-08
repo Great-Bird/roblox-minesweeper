@@ -1,4 +1,4 @@
---!nonstrict
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 
@@ -20,8 +20,9 @@ local GameStoreClient = {
 GameStoreClient.physicalBoardReducer = Rodux.createReducer({}, {
     PhysicalBoardReplaced = function(physicalBoard: PhysicalBoard.PhysicalBoard, action: PhysicalBoardReplacedAction)
         physicalBoard.model:Destroy()
-        physicalBoard.model = nil
-        table.clear(physicalBoard.cells)
+        for _, cell in physicalBoard.cells do
+            cell:Destroy()
+        end
         
         return action.newPhysicalBoard
     end
