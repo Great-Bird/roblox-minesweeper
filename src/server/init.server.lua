@@ -87,20 +87,9 @@ function main()
 end
 
 function createBoard(): Board.Board
-	local board: Board.Board = {
-		height = 10,
-		width = 10,
-		cells = {},
-	}
-	for i = 1, 100 do
-		board.cells[i] = {
-			isCleared = false,
-			isFlagged = false,
-			isMine = false,
-		}
-	end
-	BoardTransforms.placeMinesAtIndices(board, BoardTransforms.getRandomUniqueCellIndices(board, 20, os.time()))
-
+	local board = Board.create()
+	local mineIndices = BoardTransforms.getRandomUniqueCellIndices(board, 20, os.time())
+	BoardTransforms.placeMinesAtIndices(board, mineIndices)
 	return board
 end
 
