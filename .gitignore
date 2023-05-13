@@ -8,6 +8,3 @@
 
 # Luau LSP source map
 /sourcemap.json
-
-# Wally packages
-/Packages
