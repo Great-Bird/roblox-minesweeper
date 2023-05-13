@@ -5,14 +5,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local BoardManager = require(ServerScriptService.Server.BoardManager)
-local Board = require(ReplicatedStorage.Shared.types.Board)
-local Net = require(ReplicatedStorage.Packages.Net)
+local ReplicatorMiddleware = require(ServerScriptService.Server.transforms.ReplicatorMiddleware)
 local Rodux = require(ReplicatedStorage.Packages.Rodux)
-local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
-
--- TODO: use rodux store replication instead of BoardInitialized event
-local boardInitialized = Net:RemoteEvent("BoardInitialized")
-local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
+local BoardState = require(ReplicatedStorage.Shared.transforms.BoardState)
 
 function main()
 	-- TODO: let clients request the payload once they're ready for it
@@ -20,29 +15,16 @@ function main()
 	task.wait(1)
 
 	local reducer = Rodux.combineReducers({
-		boardState = GameStore.boardReducer,
+		boardState = BoardState.reducer,
 	})
 	local gameStore = Rodux.Store.new(reducer, {}, {
-		replicatorMiddleware,
+		ReplicatorMiddleware,
 	})
 
 	BoardManager.initialize(gameStore)
 	task.wait(1)
 	local randomBoard = BoardManager.generateBoard(os.time())
-	gameStore:dispatch(GameStore.Actions.boardReplaced(randomBoard))
-end
-
-function replicateBoard(board: Board.Board, player: Player)
-	boardInitialized:FireClient(player, board)
-end
-
-function replicatorMiddleware(nextDispatch, store: GameStore.GameState): any
-	return function(action: GameStore.Action)
-		if action.shouldReplicate then
-			boardStateChanged:FireAllClients(action)
-		end
-		return nextDispatch(action)
-	end
+	gameStore:dispatch(BoardState.Actions.boardReplaced(randomBoard))
 end
 
 main()

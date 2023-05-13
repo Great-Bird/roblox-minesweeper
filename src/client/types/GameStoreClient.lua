@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 
 local Rodux = require(ReplicatedStorage.Packages.Rodux)
+local BoardState = require(ReplicatedStorage.Shared.transforms.BoardState)
 local PhysicalBoard = require(StarterPlayer.StarterPlayerScripts.Client.types.PhysicalBoard)
 local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
 
@@ -29,7 +30,7 @@ GameStoreClient.physicalBoardReducer = Rodux.createReducer({}, {
 })
 
 GameStoreClient.reducer = Rodux.combineReducers({
-    boardState = GameStore.boardReducer,
+    boardState = BoardState.reducer,
     physicalBoard = GameStoreClient.physicalBoardReducer,
 })
 

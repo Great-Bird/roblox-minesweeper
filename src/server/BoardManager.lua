@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Net = require(ReplicatedStorage.Packages.Net)
+local BoardState = require(ReplicatedStorage.Shared.transforms.BoardState)
 local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 local Board = require(ReplicatedStorage.Shared.types.Board)
 local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
@@ -14,7 +15,7 @@ local BoardManager = {}
 
 function BoardManager.initialize(gameStore: GameStore.GameStore)
     local board = Board.create()
-    gameStore:dispatch(GameStore.Actions.boardReplaced(board))
+    gameStore:dispatch(BoardState.Actions.boardReplaced(board))
 
     local function getCellIfValid(index: unknown): Board.Cell?
         if type(index) ~= "number" then
@@ -36,7 +37,7 @@ function BoardManager.initialize(gameStore: GameStore.GameStore)
 			return
 		end
 
-		gameStore:dispatch(GameStore.Actions.cellsCleared({ index :: number }))
+		gameStore:dispatch(BoardState.Actions.cellsCleared({ index :: number }))
 	end)
 	flagCellRequest.OnServerEvent:Connect(function(player: Player, index: unknown)
 		local cell = getCellIfValid(index)
@@ -44,7 +45,7 @@ function BoardManager.initialize(gameStore: GameStore.GameStore)
 			return
 		end
 
-		gameStore:dispatch(GameStore.Actions.cellFlagged(index :: number))
+		gameStore:dispatch(BoardState.Actions.cellFlagged(index :: number))
 	end)
 	unflagCellRequest.OnServerEvent:Connect(function(player: Player, index: unknown)
         local cell = getCellIfValid(index)
@@ -52,7 +53,7 @@ function BoardManager.initialize(gameStore: GameStore.GameStore)
 			return
 		end
         
-		gameStore:dispatch(GameStore.Actions.cellUnflagged(index :: number))
+		gameStore:dispatch(BoardState.Actions.cellUnflagged(index :: number))
 	end)
 end
 
