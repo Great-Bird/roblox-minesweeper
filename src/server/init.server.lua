@@ -2,13 +2,16 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
+local BoardManager = require(ServerScriptService.Server.BoardManager)
 local Board = require(ReplicatedStorage.Shared.types.Board)
 local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 local Net = require(ReplicatedStorage.Packages.Net)
 local Rodux = require(ReplicatedStorage.Packages.Rodux)
 local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
 
+-- TODO: use rodux store replication instead of BoardInitialized event
 local boardInitialized = Net:RemoteEvent("BoardInitialized")
 local boardStateChanged = Net:RemoteEvent("BoardStateChanged")
 local flagCellRequest: RemoteEvent = Net:RemoteEvent("FlagCellRequest")
@@ -19,7 +22,7 @@ function main()
 	-- TODO: let clients request the payload once they're ready for it
 	Players.PlayerAdded:Wait()
 	task.wait(1)
-	local board = createBoard()
+	local board = BoardManager.generateBoard()
 	for _, player in Players:GetPlayers() do
 		replicateBoard(board, player)
 	end
@@ -84,13 +87,6 @@ function main()
 	-- 	indices[i] = i
 	-- end
 	-- gameStore:dispatch(GameStore.Actions.cellsCleared(indices))
-end
-
-function createBoard(): Board.Board
-	local board = Board.create()
-	local mineIndices = BoardTransforms.getRandomUniqueCellIndices(board, 20, os.time())
-	BoardTransforms.placeMinesAtIndices(board, mineIndices)
-	return board
 end
 
 function replicateBoard(board: Board.Board, player: Player)
