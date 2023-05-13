@@ -22,7 +22,7 @@ function BoardTransforms.indexToCoordinates(board: Board.Board, index: number): 
     }    
 end
 
-function BoardTransforms.getCellFromIndex(board: Board.Board, index: number): Board.Cell
+function BoardTransforms.getCellFromIndex(board: Board.Board, index: number): Board.Cell?
     return board.cells[index]
 end
 
