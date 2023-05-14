@@ -8,7 +8,7 @@ local Rodux = require(ReplicatedStorage.Packages.Rodux)
 export type GameState = {
     boardState: Board.Board,
 }
-export type GameStore = typeof(Rodux.Store.new()) & {
+export type GameStore = typeof(Rodux.Store.new(...)) & {
     getState: (self: GameStore) -> (GameState),
 }
 export type Action = {

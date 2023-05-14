@@ -6,9 +6,11 @@ local StarterPlayer = game:GetService("StarterPlayer")
 
 local BoardInteractionHandler = require(StarterPlayer.StarterPlayerScripts.Client.BoardInteractionHandler)
 local BoardVisualizer = require(StarterPlayer.StarterPlayerScripts.Client.BoardVisualizer)
+local PhysicalBoardState = require(StarterPlayer.StarterPlayerScripts.Client.transforms.PhysicalBoardState)
 local Net = require(ReplicatedStorage.Packages.Net)
 local GameStoreClient = require(StarterPlayer.StarterPlayerScripts.Client.types.GameStoreClient)
 local Rodux = require(ReplicatedStorage.Packages.Rodux)
+local BoardState = require(ReplicatedStorage.Shared.transforms.BoardState)
 local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
 
 local getGameStoreStateRequest = Net:RemoteFunction("GetGameStoreStateRequest")
@@ -21,10 +23,15 @@ function main()
 
 	local initialState: GameStoreClient.ClientGameState = {
 		boardState = state.boardState,
-		physicalBoard = BoardVisualizer.createBoardVisualization(state.boardState),
+		physicalBoardState = BoardVisualizer.createBoardVisualization(state.boardState),
 	}
+	
+	local reducer = Rodux.combineReducers({
+		boardState = BoardState.reducer,
+		physicalBoardState = PhysicalBoardState.reducer,
+	})
 
-	local store = Rodux.Store.new(GameStoreClient.reducer, initialState, {
+	local store = Rodux.Store.new(reducer, initialState, {
 		visualizerMiddleware :: any,
 	})
 

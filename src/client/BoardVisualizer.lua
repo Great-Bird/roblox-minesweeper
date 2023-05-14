@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 
+local PhysicalBoardState = require(StarterPlayer.StarterPlayerScripts.Client.transforms.PhysicalBoardState)
 local BoardState = require(ReplicatedStorage.Shared.transforms.BoardState)
 local BoardTransforms = require(ReplicatedStorage.Shared.transforms.BoardTransforms)
 local Board = require(ReplicatedStorage.Shared.types.Board)
@@ -17,19 +18,19 @@ local BoardVisualizer = {}
 local actionTypeToVisualizer: { [string]: ActionVisualizer } = {
     CellsCleared = function(action: BoardState.CellsClearedAction, store)
         local state: GameStoreClient.ClientGameState = store:getState()
-        PhysicalBoardTransforms.visualizeCellsCleared(state.physicalBoard, state.boardState, action.indices)
+        PhysicalBoardTransforms.visualizeCellsCleared(state.physicalBoardState, state.boardState, action.indices)
     end,
     BoardReplaced = function(action: BoardState.BoardReplacedAction, store)
         local newPhysicalBoard = BoardVisualizer.createBoardVisualization(action.newBoard)
-        store:dispatch(GameStoreClient.Actions.physicalBoardReplaced(newPhysicalBoard))
+        store:dispatch(PhysicalBoardState.Actions.physicalBoardReplaced(newPhysicalBoard))
     end,
     CellFlagged = function(action: BoardState.CellFlaggedAction, store)
         local state: GameStoreClient.ClientGameState = store:getState()
-        PhysicalBoardTransforms.setFlagVisibility(state.physicalBoard, action.index, true)
+        PhysicalBoardTransforms.setFlagVisibility(state.physicalBoardState, action.index, true)
     end,
     CellUnflagged = function(action: BoardState.CellUnflaggedAction, store)
         local state: GameStoreClient.ClientGameState = store:getState()
-        PhysicalBoardTransforms.setFlagVisibility(state.physicalBoard, action.index, false)
+        PhysicalBoardTransforms.setFlagVisibility(state.physicalBoardState, action.index, false)
     end,
 }
 

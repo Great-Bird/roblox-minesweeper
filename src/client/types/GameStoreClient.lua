@@ -3,42 +3,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 
 local Rodux = require(ReplicatedStorage.Packages.Rodux)
-local BoardState = require(ReplicatedStorage.Shared.transforms.BoardState)
 local PhysicalBoard = require(StarterPlayer.StarterPlayerScripts.Client.types.PhysicalBoard)
 local GameStore = require(ReplicatedStorage.Shared.types.GameStore)
 
+export type ClientGameStore = typeof(Rodux.Store.new(...)) & {
+    getState: (self: ClientGameStore) -> (ClientGameState),
+}
 export type ClientGameState = GameStore.GameState & {
-    physicalBoard: PhysicalBoard.PhysicalBoard,
-}
-export type PhysicalBoardReplacedAction = GameStore.Action & {
-    newPhysicalBoard: PhysicalBoard.PhysicalBoard,
+    physicalBoardState: PhysicalBoard.PhysicalBoard,
 }
 
-local GameStoreClient = {
-    Actions = {},
-}
-
-GameStoreClient.physicalBoardReducer = Rodux.createReducer({}, {
-    PhysicalBoardReplaced = function(physicalBoard: PhysicalBoard.PhysicalBoard, action: PhysicalBoardReplacedAction)
-        physicalBoard.model:Destroy()
-        for _, cell in physicalBoard.cells do
-            cell:Destroy()
-        end
-        
-        return action.newPhysicalBoard
-    end
-})
-
-GameStoreClient.reducer = Rodux.combineReducers({
-    boardState = BoardState.reducer,
-    physicalBoard = GameStoreClient.physicalBoardReducer,
-})
-
-function GameStoreClient.Actions.physicalBoardReplaced(newPhysicalBoard: PhysicalBoard.PhysicalBoard)
-    return {
-        type = "PhysicalBoardReplaced",
-        newPhysicalBoard = newPhysicalBoard,
-    }
-end
+local GameStoreClient = {}
 
 return GameStoreClient

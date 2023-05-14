@@ -18,7 +18,7 @@ function BoardInteractionHandler.initialize(character: Model, store)
 
     local touchedConnection = humanoid.Touched:Connect(function(touchedPart: BasePart)
         local state: GameStoreClient.ClientGameState = store:getState()
-        local physicalBoard = state.physicalBoard
+        local physicalBoard = state.physicalBoardState
         local board = state.boardState
 
         -- TODO: optimize this
