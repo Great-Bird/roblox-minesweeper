@@ -26,7 +26,6 @@ function main()
 		return gameStore:getState()
 	end
 
-	task.wait(1)
 	local randomBoard = BoardManager.generateBoard(os.time())
 	gameStore:dispatch(BoardState.Actions.boardReplaced(randomBoard))
 end
