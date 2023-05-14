@@ -14,7 +14,6 @@ local clearCellRequest: RemoteEvent = Net:RemoteEvent("ClearCellRequest")
 local BoardManager = {}
 
 function BoardManager.initialize(gameStore: GameStore.GameStore)
-    -- TODO: move this to a game store initializer
     local board = Board.create()
     gameStore:dispatch(BoardState.Actions.boardReplaced(board))
 
