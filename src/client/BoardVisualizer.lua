@@ -34,6 +34,10 @@ local actionTypeToVisualizer: { [string]: ActionVisualizer } = {
     end,
 }
 
+function BoardVisualizer.initialize(gameStore: GameStoreClient.ClientGameStore)
+    -- TODO: refactor physical board creation logic out of init.client and into here
+end
+
 function BoardVisualizer.visualizeAction(action: GameStore.Action, store)
     local visualizer = actionTypeToVisualizer[action.type]
     if visualizer ~= nil then
